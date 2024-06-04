@@ -106,6 +106,14 @@ FROM departamento d
 WHERE d.id_departamento IN (SELECT e.id_departamento
                             FROM empleado e
                             GROUP BY e.id_departamento
-                            HAVING (COUNT(*) < (SELECT COUNT(*) / 10
-                                                FROM empleado)))
+                            HAVING (COUNT(*) < (SELECT COUNT(*) / 10 -- el count externo cuenta el tamaño del grupo mientras que el de la subconsulta el total
+                                                FROM empleado)))        -- no se si es lo mejor ya q calculo que para cada grupo cuenta las filas otra vez pero VIVA EL PUNK
 ORDER BY d.id_distribuidor;
+
+-------------------------------------------------------------------- interpretacion
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------- PRACTICO 5 --------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
