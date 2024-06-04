@@ -30,7 +30,7 @@ SELECT  v.nombre AS "Nombre",
 FROM voluntario v
 INNER JOIN historico h ON v.nro_voluntario = h.nro_voluntario
 INNER JOIN tarea t ON h.id_tarea = t.id_tarea
-WHERE (t.max_horas - t.min_horas <= 5000) AND h.fecha_fin < '2000-01-01'
+WHERE (t.max_horas - t.min_horas <= 5000) AND (h.fecha_fin < '2000-01-01')
 GROUP BY v.nombre, v.apellido, v.e_mail, v.telefono;
 
 -- 3) Indique nombre, id y dirección completa de las instituciones que no poseen voluntarios con aporte de horas mayor o igual que el máximo de horas de la tarea que realiza. 
@@ -53,21 +53,59 @@ GROUP BY v.nombre, v.apellido, v.e_mail, v.telefono;
 -------------------------------------------------------------------- esquema de peliculas
 
 -- 9) Para cada uno de los empleados indique su id, nombre y apellido junto con el id, nombre y apellido de su jefe, en caso de tenerlo.
-
+SELECT  e.id_empleado AS "Id: ",
+        e.nombre AS "Nombre: ",
+        e.apellido AS "Apellido: ",
+        j.id_empleado AS "Id jefe: ",
+        j.nombre AS "Nombre jefe: ",
+        j.apellido AS "Apellido jefe: "
+FROM empleado e
+INNER JOIN empleado j ON e.id_empleado = j.id_empleado
+WHERE e.id_jefe IS NOT NULL;
 
 -- 10) Determine los ids, nombres y apellidos de los empleados que son jefes y cuyos departamentos donde se desempeñan se encuentren en la ciudad ‘Rawalpindi’. Ordene los datos por los ids. 
-
+SELECT  e.id_empleado AS "Id: ",
+        e.nombre AS "Nombre: ",
+        e.apellido AS "Apellido: "
+FROM empleado e
+INNER JOIN departamento d ON e.id_empleado = d.jefe_departamento
+INNER JOIN ciudad c ON d.id_ciudad = c.id_ciudad
+WHERE (c.nombre_ciudad = 'Rawalpindi') AND (d.jefe_departamento = e.id_empleado)
+ORDER BY e.id_empleado;
 
 -- 11) Liste los ids y números de inscripción de los distribuidores nacionales que hayan entregado películas en idioma Español luego del año 2010.
 
 
 -- 12) Liste las películas que nunca han sido entregadas por un distribuidor nacional.
-
+SELECT p.nombre AS "Nombre pelicula"
+FROM pelicula p
+WHERE p.nombre NOT IN ()
 
 -- 13) Liste el apellido y nombre de los empleados que trabajan en departamentos residentes en el país Argentina y donde el jefe de departamento posee más del 40% de comisión.
 
 
 -- 14) Indique los departamentos (nombre e identificador completo) que tienen más de 3 empleados con tareas con sueldo mínimo menor a 6000. Muestre el resultado ordenado por distribuidor.
-
+SELECT  d.id_departamento AS "Id dpt: ",
+        d.id_distribuidor AS "Id dist: ", -- ya que pide identificador completo y el dist tambien es parte de la PK
+        d.nombre AS "Nombre dpt: "
+FROM departamento d
+WHERE d.id_departamento IN( SELECT e.id_departamento
+                            FROM empleado e
+                            INNER JOIN tarea t ON e.id_tarea = t.id_tarea
+                            WHERE t.sueldo_minimo < 6000
+                            GROUP BY e.id_departamento
+                            HAVING COUNT(e.id_departamento) > 3)
+GROUP BY (d.id_departamento, d.id_distribuidor) -- acá creo que da lo mismo si agrupo, no hay que no hay comb. repetidas
+ORDER BY d.id_distribuidor;
 
 -- 15) Liste los datos de los departamentos en los que trabajan menos del 10 % de los empleados que hay registrados.
+SELECT  d.id_departamento AS "Id dpt: ",
+        d.id_distribuidor AS "Id dist: ",
+        d.nombre AS "Nombre dpt: "
+FROM departamento d
+WHERE d.id_departamento IN (SELECT e.id_departamento
+                            FROM empleado e
+                            GROUP BY e.id_departamento
+                            HAVING (COUNT(*) < (SELECT COUNT(*) / 10
+                                                FROM empleado)))
+ORDER BY d.id_distribuidor;
